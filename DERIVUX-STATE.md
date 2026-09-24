@@ -13,6 +13,8 @@
 - **License:** MIT.
 - **Target platform:** Grav 2.x + Admin2 2.x + API 1.x, PHP 8.3+.
 - **Development status:** mature pre-1.0. The core derived-theme creation workflow is implemented; 1.0 readiness depends mainly on runtime acceptance and release hardening.
+- **Direct Install package:** `gravister-derivux-0.6.2-direct-install.zip`, SHA-256 `7a6986556db1345d83acfeefd2452754ccaa80ddaa360a5c71e576effbb27ad2`.
+- **Source package:** `gravister-derivux-0.6.2-source.zip`, SHA-256 `16f0b6e2f62750539ce95de25f1f26b1cbc66ab75deb6df3a1e1ea019f0ddc10`.
 
 ## Product definition
 
@@ -106,8 +108,10 @@ Completed for 0.6.2 source:
 - JavaScript syntax check;
 - product-identity scan;
 - package structure audit;
-- direct-install ZIP integrity;
-- current Grav/Admin2/API integration audit.
+- Direct Install ZIP contains one `gravister-derivux/` root and no development artifacts;
+- both release ZIPs pass compressed-data integrity checks;
+- current Grav/Admin2/API integration audit;
+- GitHub Actions CI passed on the final 0.6.2 source commit.
 
 Still **NEOVĚŘENO** until tested on a real target site:
 
@@ -118,6 +122,13 @@ Still **NEOVĚŘENO** until tested on a real target site:
 - actual theme derivation with at least one non-Typhoon theme;
 - generated child activation/rendering;
 - failure rollback under a forced filesystem error.
+
+## Repository housekeeping
+
+- `main` is the intended primary development branch.
+- `master` has been synchronized to the same 0.6.2 commit so the repository does not expose stale code while GitHub still reports `master` as default.
+- GitHub default branch should be changed manually to `main`; after that `master` may be deleted if desired.
+- Repository-level description/About metadata must use only the Derivux identity; this metadata is outside the currently available repository-write connector surface and may require a manual GitHub edit.
 
 ## 1.0 readiness
 
@@ -137,4 +148,4 @@ Recommended gate before 1.0:
 
 | Date | Version | Scope | Verification |
 | --- | --- | --- | --- |
-| 2026-09-25 | `0.6.2` | Product identity, complete runtime migration, Grav 2/Admin2/API alignment, permissions, locale modernization, parent-class validation, rollback, CI/package hardening. | Static checks complete; target-site runtime acceptance remains NEOVĚŘENO. |
+| 2026-09-25 | `0.6.2` | Product identity, complete runtime migration, Grav 2/Admin2/API alignment, permissions, locale modernization, parent-class validation, rollback, CI/package hardening. | Static checks and GitHub CI complete; target-site runtime acceptance remains NEOVĚŘENO. |
