@@ -1,0 +1,59 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  static-audit:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up PHP 8.3
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          coverage: none
+
+      - name: PHP syntax
+        shell: bash
+        run: |
+          set -euo pipefail
+          while IFS= read -r -d '' file; do
+            php -l "$file"
+          done < <(find . -type f -name '*.php' -print0)
+
+      - name: JavaScript syntax
+        run: node --check admin-next/pages/gravister-derivux.js
+
+      - name: YAML syntax
+        shell: bash
+        run: |
+          python3 -m pip install --disable-pip-version-check --quiet pyyaml
+          python3 - <<'PY'
+          from pathlib import Path
+          import yaml
+          for path in Path('.').rglob('*.yaml'):
+              with path.open('r', encoding='utf-8') as handle:
+                  yaml.safe_load(handle)
+              print(f'OK {path}')
+          PY
+
+      - name: Product identity audit
+        shell: bash
+        run: |
+          set -euo pipefail
+          legacy_one="clo""nux"
+          legacy_two="klono""vacz"
+          ! grep -Rni --exclude-dir=.git --exclude='*.jpg' --exclude='*.png' -Ei "${legacy_one}|${legacy_two}" .
+          grep -q 'version: 0.6.2' blueprints.yaml
+          grep -q "slug: gravister-derivux" blueprints.yaml
+          test -f gravister-derivux.php
+          test -f gravister-derivux.yaml
+          test -f classes/Controller/GravisterDerivuxController.php
+          test -f admin-next/pages/gravister-derivux.js
+          test -f permissions.yaml
