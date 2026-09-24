@@ -1,26 +1,35 @@
-name: Derivux
-slug: derivux
+name: Derivux by Gravister
+slug: gravister-derivux
 type: plugin
-version: 0.1.0
-description: Minimal derived-theme tooling for Grav 2 using native theme inheritance.
-icon: clone
+version: 0.6.2
+description: Safe Admin2 scaffolder for minimal inherited Grav 2 themes.
+icon: code-branch
 author:
   name: Svatopluk Vít
+keywords:
+  - grav
+  - grav2
+  - admin2
+  - inheritance
+  - child-theme
+  - derived-theme
+  - scaffolder
+  - derivux
 license: MIT
-
 dependencies:
-  - { name: grav, version: '>=2.0.0' }
-
+  - name: grav
+    version: '>=2.0.0'
+  - name: api
+    version: '>=1.0.0'
+  - name: admin2
+    version: '>=2.0.0'
 form:
   validation: loose
   fields:
     enabled:
       type: toggle
-      label: PLUGIN_ADMIN.PLUGIN_STATUS
-      highlight: 1
+      label: Plugin enabled
       default: 1
       options:
-        1: PLUGIN_ADMIN.ENABLED
-        0: PLUGIN_ADMIN.DISABLED
-      validate:
-        type: bool
+        1: Enabled
+        0: Disabled
