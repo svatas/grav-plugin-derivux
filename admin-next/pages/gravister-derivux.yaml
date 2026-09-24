@@ -1,0 +1,6 @@
+id: gravister-derivux
+plugin: gravister-derivux
+title: Derivux by Gravister
+icon: fa-code-branch
+page_type: component
+authorize: api.derivux.read
