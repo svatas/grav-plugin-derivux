@@ -1,0 +1,9 @@
+actions:
+  api.derivux:
+    type: access
+    label: PLUGIN_GRAVISTER_DERIVUX.PERMISSIONS.API
+    actions:
+      read:
+        label: PLUGIN_GRAVISTER_DERIVUX.PERMISSIONS.READ
+      create:
+        label: PLUGIN_GRAVISTER_DERIVUX.PERMISSIONS.CREATE
