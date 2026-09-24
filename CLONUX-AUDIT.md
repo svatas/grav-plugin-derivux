@@ -1,126 +1,229 @@
 # Clonux → Derivux audit
 
 > Date: 2026-09-25  
-> Status: architecture/input audit only; no Clonux implementation was migrated.
+> Source inspected: `gravister-clonux-20260924221838.zip`  
+> Source version: **Clonux by Gravister 0.6.1**  
+> Status: source audit only; no Clonux runtime code has yet been migrated into Derivux.
 
 ## Executive finding
 
-There is no verified Clonux source implementation available in the current GitHub repository history or connected project material that can be mechanically renamed or ported into Derivux.
+The previous conclusion that no verifiable Clonux implementation was available is superseded. A complete Clonux 0.6.1 source package has now been supplied and inspected.
 
-The repository now named `svatas/grav-plugin-derivux` was empty before the Derivux bootstrap. Searches for a separate `Clonux by Gravister` repository/source did not produce an implementation to inspect. Therefore any claim that Derivux 0.1.0 is renamed Clonux code would be false.
+This changes the migration picture significantly: Clonux is **already an inheritance-first Grav 2 scaffolder**, not a whole-theme copier. Its fundamental product architecture is therefore aligned with Derivux far more closely than previously assumed.
 
-Clonux remains useful as **product-history input**: its intent was safe cloning/migration workflows around Grav themes. Derivux deliberately narrows and modernizes that idea around native Grav theme inheritance.
+Derivux should not be a blind text rename of Clonux, but Clonux 0.6.1 is now the best available functional baseline and should be treated as verified legacy source for a controlled refactor/rebrand.
 
-## What is retained conceptually
+## Verified Clonux 0.6.1 architecture
 
-The following ideas are worth preserving as product intent, not as source compatibility requirements:
+The package contains:
 
-- a guided workflow rather than asking users to hand-build derived themes;
-- explicit source/parent theme selection;
-- explicit target identity;
-- preflight checks before filesystem mutation;
-- non-destructive behavior by default;
-- clear reporting of what will be created or changed;
-- failure should leave the existing site/theme state intact.
+- Grav 2 plugin entry point `gravister-clonux.php`;
+- Admin2 page component `admin-next/pages/gravister-clonux.js`;
+- API controller `classes/Controller/GravisterClonuxController.php`;
+- EN/CS localization;
+- plugin blueprint/configuration;
+- preview fallback resources;
+- placeholder blueprint/template resources;
+- README, CHANGELOG and MIT license.
 
-## What is deliberately not retained
+The plugin exposes Admin2/API routes for:
 
-- Full parent-theme copying as the default derivation mechanism.
-- Compatibility obligations to an unverified historical Clonux implementation.
-- Opaque "clone everything and edit later" behavior.
-- Unnecessary parallel infrastructure where Grav already provides inheritance, configuration, streams or blueprints.
-- Automatic coupling to Elementux or Elementux Canvas.
+- localization;
+- installed-theme discovery;
+- dry-run validation/planning;
+- theme creation.
 
-## Grav-native basis verified for Derivux
+The Admin2 UX is a four-step flow: source theme → target theme → review → done.
 
-Current Grav 2 documentation explicitly describes theme inheritance as the preferred way to customize a theme: the derived theme contains the parts that differ, while the base theme handles the rest.
+## What Clonux already does correctly
 
-The documented manual inheritance model uses a theme configuration stream whose lookup order is the derived theme first and the parent theme second. A derived theme also has its own theme PHP class and blueprint/configuration metadata. Grav documentation further recommends avoiding copied templates when extension/inheritance can keep the installation receiving upstream fixes.
+### Native inheritance, not full cloning
 
-This matches the approved Derivux architecture: **derive minimally, inherit maximally**.
+Clonux explicitly does **not** copy the parent theme tree. The generated child YAML uses a Grav `ReadOnlyStream` with this lookup order:
 
-## Proposed first functional workflow
+1. `user/themes/<child>`
+2. `user/themes/<parent>`
 
-The first functional milestone should be deliberately small. Working name: **0.2.0 — Minimal Theme Derivation**.
+The generated PHP class extends the parent theme class. The generated child blueprint extends the parent theme blueprint using `themes://<parent>`.
 
-### Input
+That is directly aligned with the approved Derivux principle: **derive minimally, inherit maximally**.
 
-1. Select one installed parent theme from `user/themes`.
-2. Enter a new derived-theme slug.
-3. Enter a human-readable title.
-4. Enter optional author/metadata values that belong to the new theme rather than the parent.
+### Safety model
 
-### Preflight
+Clonux 0.6.1 already enforces important rules that should survive into Derivux:
 
-Before writing anything, Derivux should validate at minimum:
+- validates source and target slugs;
+- refuses source == target;
+- requires the parent directory to exist;
+- refuses to overwrite an existing target path;
+- writes only under `user/themes/<target>`;
+- does not modify the parent;
+- does not activate the generated theme automatically;
+- does not clear cache;
+- does not execute shell, npm, Tailwind, Vite or PostCSS commands;
+- supports a dry-run/review step before creation.
 
-- parent theme directory exists and is readable;
-- parent has the metadata/configuration needed to act as a usable Grav theme;
-- target slug is valid and safe as a directory/theme identifier;
-- target directory does not already exist;
-- target is not the same theme as the parent;
-- required generated files can be determined before mutation;
-- no generated path escapes `user/themes/<target>`.
+### Admin2 integration
 
-The first release should **not overwrite** an existing target theme.
+Clonux already has working product structure for Admin2:
 
-### Plan / impact preview
+- sidebar item;
+- component page registration;
+- API routes;
+- token-aware API client;
+- EN/CS UI;
+- source-theme discovery;
+- review/report screen;
+- post-create navigation.
 
-Before generation, show the exact target and generated file set. The MVP plan should make it obvious that Derivux is not cloning the parent tree.
+This is too much proven behavior to discard merely to rebuild the same product under a new name.
 
-Expected minimal generated set:
+### Tailwind/build awareness
 
-- `<target>.php`
-- `<target>.yaml`
-- `blueprints.yaml`
-- `README.md`
-- `CHANGELOG.md`
-- `LICENSE`
+The source scans the parent theme for indicators such as:
 
-Images such as `thumbnail.jpg` / `screenshot.jpg` should not be silently copied in the first MVP unless a later UX decision explicitly defines that behavior.
+- `package.json`;
+- Tailwind config files;
+- PostCSS config;
+- Vite config;
+- compiled CSS hints.
 
-### Generation
+It then presents guidance without trying to run a build automatically. This is a sound conservative boundary and should remain unless a later explicit feature adds an opt-in developer workflow.
 
-Generation should create a **new directory only after preflight succeeds**. The generated `<target>.yaml` should establish the Grav theme stream lookup order with the derived theme before the selected parent theme.
+## What should be retained in Derivux
 
-The generated theme PHP class should derive from the selected parent theme class only when Derivux can resolve that relationship safely. Parent class/namespace discovery therefore belongs to MVP validation, not string guessing.
+Derivux should preserve, after review/refactoring:
 
-Parent templates, CSS, JS and other assets should **not** be copied by default. A user can add overrides later; selective override tooling is a later milestone.
+- the source/target/review/done Admin2 flow;
+- installed theme discovery;
+- target slug validation;
+- hard no-overwrite behavior;
+- dry-run planning;
+- Grav-native inheritance stream generation;
+- parent blueprint inheritance;
+- parent-theme class inheritance;
+- EN/CS UX;
+- build-system detection/guidance;
+- explicit statement that the parent remains untouched;
+- no automatic activation or shell/build execution.
 
-### Post-generation validation
+## What should not be copied blindly
 
-After creation Derivux should verify:
+### Parent class derivation
 
-- all expected files exist;
-- generated YAML parses;
-- the inheritance stream points to the intended child and parent paths;
-- PHP class/file identity is internally consistent;
-- the target remains isolated under its expected theme directory.
+Clonux currently derives class names mechanically from slugs. This should be audited before Derivux adopts it as a general solution. A parent theme whose PHP class does not match the slug-derived convention could break the generated child class.
 
-If post-generation validation fails, the operation should remove only the newly created target directory from that operation and report the failure.
+Derivux should inspect/resolve the actual parent theme class where possible and fail safely rather than guess silently.
 
-## Explicitly deferred beyond 0.2.0
+### Theme configuration copying
 
-- switching the site's active theme automatically;
-- copying or generating arbitrary template overrides;
-- diffing parent files;
-- synchronizing a derived theme when the parent changes;
-- importing/migrating historical Clonux projects;
+Clonux reads the parent theme YAML, removes its `streams` block, and uses the remaining configuration as the starting child YAML before adding inheritance streams.
+
+This is practical, but it means the generated child is not minimal in the strictest sense: it snapshots parent configuration values at creation time. Derivux needs an explicit product decision here:
+
+- preserve this behavior for predictable Admin settings, or
+- generate a thinner child config and rely more heavily on inheritance/defaults.
+
+This must be tested against Grav 2/Admin2 behavior before changing it.
+
+### Filesystem transaction behavior
+
+Clonux executes operations sequentially. On a write/copy failure it stops and reports an error, but the inspected implementation does **not** roll back directories/files already created during that attempt.
+
+Derivux should improve this with create/validate/cleanup behavior limited strictly to the new target directory.
+
+### Preview complexity
+
+Clonux generates dynamic SVG and pure-PHP PNG previews plus static JPG fallbacks. This is clever and hosting-friendly, but it is a substantial amount of code and creates nine preview files across three formats.
+
+Derivux should decide whether Admin2 still requires this exact preview strategy. If one or two formats are sufficient in current Grav 2/Admin2, this is a candidate for simplification. Until runtime-tested, do not remove it merely for cleanliness.
+
+### Empty directories and placeholder resources
+
+Clonux creates `templates/`, `css/` and `css/custom/` directories even when no overrides exist, and the plugin package itself includes placeholder modular resources.
+
+These should be re-evaluated against the principle of minimal generated output. Empty directories may be useful onboarding affordances, but they are not required by inheritance itself.
+
+### Controller maintainability
+
+The Clonux controller is highly compact and combines discovery, validation, planning, generation, preview rendering, PNG encoding, localization parsing and filesystem execution in one class.
+
+Derivux should preserve behavior while splitting responsibilities into testable services rather than perpetuating a monolithic controller.
+
+## Revised Derivux implementation strategy
+
+The recommended next functional version remains **0.2.0**, but it should now be framed as **Clonux 0.6.1 controlled migration + architectural cleanup**, not a greenfield reimplementation.
+
+### Phase 1: behavioral baseline
+
+Capture Clonux 0.6.1 behavior as tests/specification before changing semantics:
+
+- source-theme discovery;
+- target validation;
+- no-overwrite;
+- planned operation list;
+- inherited YAML stream;
+- parent blueprint extension;
+- generated PHP class relationship;
+- no automatic activation;
+- EN/CS flow;
+- build hints.
+
+### Phase 2: Derivux identity migration
+
+Rename product/runtime identities consistently:
+
+- `Clonux by Gravister` → `Derivux by Gravister`;
+- plugin slug/API namespace/component IDs;
+- PHP namespaces/classes;
+- language namespaces;
+- generated README/preview branding;
+- route names and documentation.
+
+This must be a semantic migration, not global search-and-replace without tests.
+
+### Phase 3: architecture cleanup without feature creep
+
+Refactor the controller into small responsibilities, for example:
+
+- `ThemeDiscoveryService`;
+- `ThemeInspectionService`;
+- `DerivationPlanner`;
+- `ThemeGenerator`;
+- `GenerationTransaction` / cleanup boundary;
+- preview service only if previews remain necessary.
+
+The Admin2 controller should become thin orchestration around those services.
+
+### Phase 4: correctness improvements
+
+Before declaring Derivux functionally equivalent or better:
+
+- resolve actual parent class/namespace instead of relying only on slug conversion;
+- validate generated YAML/PHP metadata;
+- add rollback/cleanup on failed generation;
+- verify path confinement;
+- test blueprint inheritance on current Grav 2/Admin2;
+- determine whether copied parent configuration is desirable or unnecessarily sticky;
+- verify which preview formats are actually required by current Admin2.
+
+## Scope that remains deferred
+
+Do not add during the migration unless explicitly approved:
+
+- automatic activation of the generated theme;
+- automatic cache clearing;
+- automatic Tailwind/Vite/npm builds;
+- template/CSS/JS override generation beyond the existing scaffold;
+- parent-update synchronization;
 - Elementux integration;
-- Elementux Canvas-specific generation;
-- packaging/publishing generated themes to GPM;
-- repository creation for generated themes.
-
-## Recommended implementation sequence
-
-1. Parent-theme discovery and metadata inspection service.
-2. Target identity and path validation.
-3. Deterministic derivation plan object with no filesystem writes.
-4. Minimal file generator.
-5. Transaction-like create/validate/cleanup behavior for the new target directory.
-6. Admin2 UI only after the derivation service works independently and can be tested without the UI.
-7. Runtime test on a Grav 2 installation with at least one simple parent theme and one more complex theme.
+- Elementux Canvas-specific behavior;
+- GitHub/GPM publishing of generated themes.
 
 ## Decision gate
 
-No 0.2.0 implementation should begin until the workflow and generated-file boundary above are explicitly accepted or amended. The key product question is not how much of Clonux to copy. There is no verified Clonux code to copy. The question is how little Derivux needs to generate while still producing a valid, maintainable inherited Grav theme.
+The recovered source changes the recommended decision.
+
+**Do not rewrite Clonux from scratch.** Preserve its proven inheritance-first behavior and Admin2 workflow, migrate it deliberately into Derivux, and improve the internals behind the same safe product contract.
+
+The next implementation should therefore start from the supplied **Clonux 0.6.1 source as behavioral input**, while the current Derivux 0.1.0 repository remains the clean product baseline and governance home.
