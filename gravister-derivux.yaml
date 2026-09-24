@@ -1,0 +1,5 @@
+enabled: true
+preview:
+  dynamic_svg: true
+  dynamic_png_pure_php: true
+  static_jpg_fallback: true
